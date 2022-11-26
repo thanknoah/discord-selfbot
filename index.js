@@ -29,12 +29,23 @@ client.on("ready", () => {
 // On Message
 client.on("message", (msg) => {
     if (!msg.content.startsWith(prefix)) return false;
-    if (msg.content.includes("hello")) {
+    let string = msg.content.split(/\b(\s)/)
+    string[0] = string[0].substring(1, string[0].length)
+
+    console.log(string)
+
+    if (string[0] == "hello") {
         msg.reply("Hello!");
     }
 
-    if (msg.content.includes("help")) {
+    if (string[0] == "help") {
         msg.reply("`Available Commands: !hello, !help`")
+    }
+
+    if (string[0] == "setAboutMe") {
+        if (client.user.setAboutMe(string[2])) {
+            console.log("Done")
+        }
     }
 })
 
