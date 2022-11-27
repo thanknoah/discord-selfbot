@@ -94,7 +94,7 @@ client.on("message", (msg) => {
     }
 
     if (command == "help") {
-        msg.reply("Available Commands: `help, hello, setAboutMe, setActivity, joke, setThemeColor, create_vote, vote, low-self-esteem`");
+        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], vote [args] [args2], low-self-esteem`");
     }
 
     if (command == "setAboutMe" && msg.author.id == userId) {
@@ -157,7 +157,6 @@ client.on("message", (msg) => {
         let existing = false;
 
         votes.forEach((vote) => {
-            console.log(vote.name + " " + arg1);
             if (vote.name == arg1) {
                 existing = true;
             }
@@ -174,35 +173,62 @@ client.on("message", (msg) => {
     }
 
     if (command == "vote") {
-       let existing = false
+       let existing = false;
+       let existingUser = false;
+       let i = 0
 
-        votes.forEach((vote, index) => {
+       votes.forEach((vote, index) => {
            if (vote.name == arg1) {
-               let existingUser = false;
+               let existingUser = true;
+
                existing = true;
-
-               vote.voters.forEach((element) => {
-                   if (element == msg.author.id) {
-                      if (response == "Yes" || response == "yes") msg.reply("You have already voted for this!");
-                      existingUser = true;
-                   }
-
-                   if (!existingUser) {
-                      element.push(msg.author.id)
-                      vote.push(arg2)
-
-                      if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + vote.voters.length + " votes.");
-                      if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.id} has voted ${arg1}`));
-                   }
-               })
+               i = index;
            }
         });
 
+        if (existing) {
+            if (votes[i].voters.length == 0) {
+                votes[i].voters.push(msg.author.username)
+                votes[i].vote.push(arg2)
+
+                if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + votes[i].voters.length + " votes.");
+                if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.username} has voted ${arg2} for ${votes[i].name}`));
+            }
+
+            votes[i].voters.forEach((element) => {
+                if (element == msg.author.name) {
+                   if (response == "Yes" || response == "yes") msg.reply("You have already voted for this!");
+                   existingUser = true;
+                }
+            });
+
+            if (!existingUser) {
+                votes[i].voters.push(msg.author.username)
+                votes[i].vote.push(arg2)
+
+                if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + votes[i].voters.length + " votes.");
+                if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.username} has voted ${arg2} for ${votes[i].name}`));
+             }
+        };
+
         if (!existing) {
             if (response == "Yes" || response == "yes") msg.reply("Vote does not exist!");
-        }
+        };
+    };
+
+    if (command == "view_vote") {
+        votes.forEach((vote, i) => {
+            if (vote.name == arg1) {
+               string = "";
+               vote.voters.forEach((voterName, person) => {
+                    string = string + `${voterName}: ${votes[i].vote[person]}\n`;
+               });
+
+               msg.reply("Votes: " + "`" + string + "`") ;
+            }
+        });
     }
-})
+});
 
 // Login
 client.login(fs.readFileSync("token.txt", "utf-8", (err) => {
