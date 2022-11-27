@@ -1,9 +1,8 @@
-echo "You need too install NodeJS on your computer for this too work!"
-node -v
+@echo off
 
-npm install discord.js-selfbot-v13
-npm install chalk
-npm install prompt-sync
-npm install axios
-
+echo "Make sure you have NodeJS installed."
+title Noah's SelfBot V1.2
+:START
 node index.js
+
+goto START 
