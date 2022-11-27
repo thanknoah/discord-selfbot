@@ -9,9 +9,11 @@ const axios = require('axios');
 const fs = require('fs');
 
 // Config Variables
-let prefix = "";
-let response = "Yes";
-let logCommands = "Yes";
+let prefix = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).prefix;
+let response = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).response;
+let logCommands = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).logCommand;
+let activityDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).defaultActivity;
+let activityTypeDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).activityType;
 let userId = null;
 chalk.level = 1;
 
@@ -25,25 +27,49 @@ client.on("ready", () => {
     console.log(chalk.green(`Logged in: ${client.user.username}`));
     console.log(chalk.green(`User ID: ${client.user.id}`))
 
-    const setPrefix = prompt(chalk.redBright("Prefix > "));
-    const setActivity = prompt(chalk.redBright("[Skip if not set] Set activity > "));
-    const setActivityType = prompt(chalk.redBright("Activity Type > "));
-    const setRespondToCommand = prompt(chalk.redBright("Bot responds [Yes, No] > "));
-    const setCommandLog = prompt(chalk.redBright("Log commands [Yes, No] > "));
+    if (prefix == null) {
+        console.log(chalk.green("It seems like your new. Please config your settings!"))
+
+        const setPrefix = prompt(chalk.redBright("Prefix > "));
+        const setActivity = prompt(chalk.redBright("[Skip if not set] Set activity > "));
+        const setActivityType = prompt(chalk.redBright("Activity Type > "));
+        const setRespondToCommand = prompt(chalk.redBright("Bot responds [Yes, No] > "));
+        const setCommandLog = prompt(chalk.redBright("Log commands [Yes, No] > "));
+
+        response = setRespondToCommand;
+        logCommands = setCommandLog;
+        prefix = setPrefix;
+
+        try {
+            (setActivity) ? client.user.setActivity(setActivity, { activity: setActivityType }) : "";
+        } catch (err) {
+            console.log(chalk.red(`Error: ${err}`));
+        }
+
+        let data = {
+            "prefix": prefix,
+            "defaultActivity": setActivity,
+            "activityType": setActivityType,
+            "response": response,
+            "logCommand": logCommands
+        }
+
+        fs.writeFileSync("info.json", JSON.stringify(data), (err) => {
+            console.log(chalk.red(`Error: ${err}`))
+        })
+    } else {
+
+        try {
+            (activityDefault) ? client.user.setActivity(activityDefault, { activity: activityTypeDefault }) : "";
+            console.log("Note: if you want to change any settings go to info.json. Do not mess around with the {, or quotation marks as it will break the code.")
+        } catch (err) {
+            console.log(chalk.red(`Error: ${err}`));
+        }
+    }
 
     console.log(" ")
 
-    response = setRespondToCommand;
-    logCommands = setCommandLog;
-
-    try {
-        (setActivity) ? client.user.setActivity(setActivity, { activity: setActivityType }) : "";
-    } catch (err) {
-        console.log(chalk.red(`Error: ${err}`));
-    }
-
     userId = client.user.id;
-    prefix = setPrefix;
 });
 
 // On Message
@@ -83,7 +109,7 @@ client.on("message", (msg) => {
 
     if (command == "joke") {
         axios
-        .get("https://v2.jokeapi.dev/joke/Programming,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=txt")
+        .get("https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=txt")
         .then((response) => {
             msg.reply(response.data);
             console.log(chalk.green("LOGGED COMMAND: Stated Joke!"))
@@ -96,18 +122,18 @@ client.on("message", (msg) => {
 
             if (num == 1) {
                 client.user.setAccentColor("BLUE");
-                msg.reply("Changed accent color too: Blue");
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Blue");
             }
             if (num == 2) {
                 client.user.setAccentColor("RED");
-                msg.reply("Changed accent color too: Red")
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Red");
             }
             if (num == 3) {
                 client.user.setAccentColor("GREEN")
-                msg.reply("Changed accent color too: Green")
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Green");
             }
 
-            return console.log(chalk.green("LOGGED COMMAND: Changed Accent Color"))
+            if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed activity!"));
         }
 
         if (arg1) {
@@ -115,15 +141,19 @@ client.on("message", (msg) => {
                client.user.setAccentColor(arg1.toLocaleUpperCase())
             } catch (e) {
                console.log(chalk.red("ERROR: Not valid theme color!"))
-               msg.reply("Not valid theme color!")
+               if (response == "Yes" || response == "yes") msg.reply(`Not valid theme color`);
             }
         }
+    }
+
+    if (command == "low-self-esteem") {
+        msg.reply("Your the best man!");
     }
 })
 
 // Login
 client.login(fs.readFileSync("token.txt", "utf-8", (err) => {
     if (err) {
-        return console.log(chalk.red(err));
+        return console.log(chalk.red(err) + "\n PLEASE PUT YOUR TOKEN IN TOKEN.TXT AND RUN AGAIN");
     }
 }));
