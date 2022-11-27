@@ -15,6 +15,8 @@ let logCommands = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { co
 let activityDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).defaultActivity;
 let activityTypeDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).activityType;
 let userId = null;
+const votes = [];
+
 chalk.level = 1;
 
 // On Ready && Procedure
@@ -79,19 +81,20 @@ client.on("message", (msg) => {
     let string = msg.content.split(" ");
     let command = string[0].substring(1, string[0].length);
     let arg1 = string[1];
-    let groupedArgs = ""
+    let arg2 = string[2];
+    let groupedArgs = "";
 
     string.forEach((v, i) => {
-        if (i != 0) groupedArgs = groupedArgs + ` ${v}` 
+        if (i != 0) groupedArgs = groupedArgs + ` ${v}` ;
     })
 
     if (command == "hello") {
         msg.reply("Hello!");
-        console.log(chalk.green("LOGGED COMMAND: Stated Greeting!"))
+        console.log(chalk.green("LOGGED COMMAND: Stated Greeting!"));
     }
 
     if (command == "help") {
-        msg.reply("Available Commands: `help, hello, setAboutMe, setActivity, joke`");
+        msg.reply("Available Commands: `help, hello, setAboutMe, setActivity, joke, setThemeColor, create_vote, vote, low-self-esteem`");
     }
 
     if (command == "setAboutMe" && msg.author.id == userId) {
@@ -133,7 +136,7 @@ client.on("message", (msg) => {
                 if (response == "Yes" || response == "yes") msg.reply("Set Color too Green");
             }
 
-            if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed activity!"));
+            if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed color!"));
         }
 
         if (arg1) {
@@ -141,13 +144,63 @@ client.on("message", (msg) => {
                client.user.setAccentColor(arg1.toLocaleUpperCase())
             } catch (e) {
                console.log(chalk.red("ERROR: Not valid theme color!"))
-               if (response == "Yes" || response == "yes") msg.reply(`Not valid theme color`);
+               if (response == "Yes" || response == "yes") msg.reply(`Not valid theme color: ${arg1}`);
             }
         }
     }
 
     if (command == "low-self-esteem") {
         msg.reply("Your the best man!");
+    }
+
+    if (command == "create_vote" && msg.author.id == userId) {
+        let existing = false;
+
+        votes.forEach((vote) => {
+            console.log(vote.name + " " + arg1);
+            if (vote.name == arg1) {
+                existing = true;
+            }
+        })
+
+        if (existing) {
+            if (response == "Yes" || response == "yes") msg.reply("Vote already exists!");
+        }
+        if (!existing) {
+            votes.push({ name: arg1, voters: [], vote: [] });
+            if (response == "Yes" || response == "yes") msg.reply(`Created vote: ${arg1}. To vote, please say ${prefix}vote ${arg1} yes/no `);
+            if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: Added vote: ${arg1}`));
+        }
+    }
+
+    if (command == "vote") {
+       let existing = false
+
+        votes.forEach((vote, index) => {
+           if (vote.name == arg1) {
+               let existingUser = false;
+               existing = true;
+
+               vote.voters.forEach((element) => {
+                   if (element == msg.author.id) {
+                      if (response == "Yes" || response == "yes") msg.reply("You have already voted for this!");
+                      existingUser = true;
+                   }
+
+                   if (!existingUser) {
+                      element.push(msg.author.id)
+                      vote.push(arg2)
+
+                      if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + vote.voters.length + " votes.");
+                      if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.id} has voted ${arg1}`));
+                   }
+               })
+           }
+        });
+
+        if (!existing) {
+            if (response == "Yes" || response == "yes") msg.reply("Vote does not exist!");
+        }
     }
 })
 
