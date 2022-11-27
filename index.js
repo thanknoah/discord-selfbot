@@ -61,6 +61,7 @@ client.on("message", (msg) => {
 
     if (command == "hello") {
         msg.reply("Hello!");
+        console.log(chalk.green("LOGGED COMMAND: Stated Greeting!"))
     }
 
     if (command == "help") {
@@ -75,6 +76,7 @@ client.on("message", (msg) => {
 
     if (command == "setActivity" && msg.author.id == userId) {
         client.user.setActivity(groupedArgs)
+
         if (response == "Yes" || response == "yes") msg.reply(`Set activity too: ${groupedArgs}`);
         if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed activity!"));
     }
@@ -84,8 +86,38 @@ client.on("message", (msg) => {
         .get("https://v2.jokeapi.dev/joke/Programming,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=txt")
         .then((response) => {
             msg.reply(response.data);
-            console.log(chalk.green("Successfully told joke!"))
+            console.log(chalk.green("LOGGED COMMAND: Stated Joke!"))
         })
+    }
+
+    if (command == "setThemeColor") {
+        if (arg1 == "random") {
+            let num = Math.floor(Math.random() * 3);
+
+            if (num == 1) {
+                client.user.setAccentColor("BLUE");
+                msg.reply("Changed accent color too: Blue");
+            }
+            if (num == 2) {
+                client.user.setAccentColor("RED");
+                msg.reply("Changed accent color too: Red")
+            }
+            if (num == 3) {
+                client.user.setAccentColor("GREEN")
+                msg.reply("Changed accent color too: Green")
+            }
+
+            return console.log(chalk.green("LOGGED COMMAND: Changed Accent Color"))
+        }
+
+        if (arg1) {
+            try {
+               client.user.setAccentColor(arg1.toLocaleUpperCase())
+            } catch (e) {
+               console.log(chalk.red("ERROR: Not valid theme color!"))
+               msg.reply("Not valid theme color!")
+            }
+        }
     }
 })
 
