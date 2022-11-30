@@ -1,5 +1,5 @@
 // Imports
-const { Client, MessageFlags, ModalSubmitFieldsResolver } = require('discord.js-selfbot-v13');
+const { Client } = require('discord.js-selfbot-v13');
 const chalk = require("chalk");
 const client = new Client({
     checkUpdate: false
