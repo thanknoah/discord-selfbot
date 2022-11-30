@@ -1,5 +1,5 @@
 // Imports
-const { Client } = require('discord.js-selfbot-v13');
+const { Client, MessageFlags, ModalSubmitFieldsResolver } = require('discord.js-selfbot-v13');
 const chalk = require("chalk");
 const client = new Client({
     checkUpdate: false
@@ -94,7 +94,7 @@ client.on("message", (msg) => {
     }
 
     if (command == "help") {
-        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], view_vote [args], vote [args] [args2], low-self-esteem`");
+        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], vote [args] [args2], low-self-esteem`");
     }
 
     if (command == "setAboutMe" && msg.author.id == userId) {
@@ -126,15 +126,15 @@ client.on("message", (msg) => {
 
             if (num == 1) {
                 client.user.setAccentColor("BLUE");
-                if (response == "Yes" || response == "yes") msg.reply("Set Color too Blue");
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Blue. Please wait a couple of seconds for this change too take place.");
             }
             if (num == 2) {
                 client.user.setAccentColor("RED");
-                if (response == "Yes" || response == "yes") msg.reply("Set Color too Red");
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Red. Please wait a couple of seconds for this change too take place.");
             }
             if (num == 3) {
                 client.user.setAccentColor("GREEN");
-                if (response == "Yes" || response == "yes") msg.reply("Set Color too Green");
+                if (response == "Yes" || response == "yes") msg.reply("Set Color too Green. Please wait a couple of seconds for this change too take place.");
             }
 
             if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed color!"));
@@ -216,7 +216,7 @@ client.on("message", (msg) => {
             if (response == "Yes" || response == "yes") msg.reply("Vote does not exist!");
         }
 
-        if (!existingUser) {
+        if (existingUser) {
             if (response == "Yes" || response == "yes") msg.reply("You have already voted for this");
         }
     };
