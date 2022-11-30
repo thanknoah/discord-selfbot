@@ -5,10 +5,7 @@ title Noah's SelfBot V1.2
 
 :START
 
-npm install axios
-npm install discord.js-selfbot-v13
-npm install prompt-sync
-npm install chalk
+rem If you do not have NodeJS installed then please look it up.
 
 node index.js
 
