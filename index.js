@@ -1,5 +1,5 @@
 // Imports
-const { Client } = require('discord.js-selfbot-v13');
+const { Client, MessageFlags, ModalSubmitFieldsResolver } = require('discord.js-selfbot-v13');
 const chalk = require("chalk");
 const client = new Client({
     checkUpdate: false
@@ -94,7 +94,7 @@ client.on("message", (msg) => {
     }
 
     if (command == "help") {
-        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], vote [args] [args2], low-self-esteem`");
+        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], view_vote [args], vote [args] [args2], low-self-esteem`");
     }
 
     if (command == "setAboutMe" && msg.author.id == userId) {
@@ -112,11 +112,12 @@ client.on("message", (msg) => {
 
     if (command == "joke") {
         axios
-        .get("https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=txt")
+        .get("https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=json")
         .then((response) => {
-            msg.reply(response.data);
+            msg.reply(response.data.setup);
+            setTimeout(() => { msg.reply(response.data.delivery); msg.reply("Haha! So funny."); }, 3000);
             console.log(chalk.green("LOGGED COMMAND: Stated Joke!"))
-        })
+        });
     }
 
     if (command == "setThemeColor") {
@@ -132,7 +133,7 @@ client.on("message", (msg) => {
                 if (response == "Yes" || response == "yes") msg.reply("Set Color too Red");
             }
             if (num == 3) {
-                client.user.setAccentColor("GREEN")
+                client.user.setAccentColor("GREEN");
                 if (response == "Yes" || response == "yes") msg.reply("Set Color too Green");
             }
 
@@ -142,6 +143,8 @@ client.on("message", (msg) => {
         if (arg1) {
             try {
                client.user.setAccentColor(arg1.toLocaleUpperCase())
+               if (response == "Yes" || response == "yes") msg.reply(`Changed Color too: ${arg1}. Please wait a couple of seconds for this change too take place.`);
+               if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed color!"));
             } catch (e) {
                console.log(chalk.red("ERROR: Not valid theme color!"))
                if (response == "Yes" || response == "yes") msg.reply(`Not valid theme color: ${arg1}`);
@@ -175,45 +178,47 @@ client.on("message", (msg) => {
     if (command == "vote") {
        let existing = false;
        let existingUser = false;
-       let i = 0
+       let i = 0;
 
        votes.forEach((vote, index) => {
            if (vote.name == arg1) {
-               let existingUser = true;
-
                existing = true;
                i = index;
+
+               votes[i].voters.forEach((user) => {
+                  if (user == msg.author.username) {
+                      existingUser = true;
+                      return '';
+                  }
+               })
            }
         });
 
         if (existing) {
             if (votes[i].voters.length == 0) {
-                votes[i].voters.push(msg.author.username)
-                votes[i].vote.push(arg2)
+                votes[i].voters.push(msg.author.username);
+                votes[i].vote.push(arg2);
 
                 if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + votes[i].voters.length + " votes.");
                 if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.username} has voted ${arg2} for ${votes[i].name}`));
             }
 
-            votes[i].voters.forEach((element) => {
-                if (element == msg.author.name) {
-                   if (response == "Yes" || response == "yes") msg.reply("You have already voted for this!");
-                   existingUser = true;
-                }
-            });
-
-            if (!existingUser) {
-                votes[i].voters.push(msg.author.username)
-                votes[i].vote.push(arg2)
+            if (existingUser == false) {
+                votes[i].voters.push(msg.author.username);
+                votes[i].vote.push(arg2);
 
                 if (response == "Yes" || response == "yes") msg.reply("Your vote has been added. There are currently " + votes[i].voters.length + " votes.");
                 if (logCommands == "Yes" || response == "yes") return console.log(chalk.green(`LOGGED COMMAND: ${msg.author.username} has voted ${arg2} for ${votes[i].name}`));
              }
-        };
+        }
 
         if (!existing) {
             if (response == "Yes" || response == "yes") msg.reply("Vote does not exist!");
-        };
+        }
+
+        if (!existingUser) {
+            if (response == "Yes" || response == "yes") msg.reply("You have already voted for this");
+        }
     };
 
     if (command == "view_vote") {
