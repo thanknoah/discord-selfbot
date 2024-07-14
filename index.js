@@ -1,5 +1,5 @@
 // Imports
-const { Client, MessageFlags, ModalSubmitFieldsResolver } = require('discord.js-selfbot-v13');
+const { Client, Message, MessageEmbed } = require('discord.js-selfbot-v13');
 const chalk = require("chalk");
 const client = new Client({
     checkUpdate: false
@@ -15,21 +15,29 @@ let logCommands = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { co
 let activityDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).defaultActivity;
 let activityTypeDefault = JSON.parse(fs.readFileSync("info.json", "utf-8", (err) => { console.log(chalk.red(err)) })).activityType;
 let userId = null;
+let specialFont = false;
+let cancelTimer = false;
+let jokeTimes = 0;
 const votes = [];
+
+//Font
+const alphabet = [...'abcdefghijklmnopqrstuvwxyz '];
+const newAlphabet = [...'​​🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉 '];
 
 chalk.level = 1;
 
 // On Ready && Procedure
 client.on("ready", () => {
-    console.log(chalk.redBright("🐨☯  ŇＯ𝓪ħş ѕ𝔢ᒪƑβⓞ𝕋 𝐯Ѳ.０❶  ♪♜"));
-    console.log(chalk.redBright("🐨☯  ŇＯ𝓪ħş ѕ𝔢ᒪƑβⓞ𝕋 𝐯Ѳ.０❶  ♪♜"));
-    console.log(chalk.redBright("🐨☯  ŇＯ𝓪ħş ѕ𝔢ᒪƑβⓞ𝕋 𝐯Ѳ.０❶  ♪♜"));
-    console.log(chalk.redBright("🐨☯  ŇＯ𝓪ħş ѕ𝔢ᒪƑβⓞ𝕋 𝐯Ѳ.０❶  ♪♜"));
+    console.log(chalk.yellowBright("☝🐨  𝐍ᵒ𝒶𝓗 𝐬𝔢ᒪ𝔣 вｏt Ⓥ２  ♘🐨"));
+    console.log(chalk.yellowBright("☝🐨  𝐍ᵒ𝒶𝓗 𝐬𝔢ᒪ𝔣 вｏt Ⓥ２  ♘🐨\n"));
+
+    console.log(chalk.greenBright(`Welcome back, ${client.user.username}`));
+    console.log(chalk.redBright("New updates: time function added, jokes are set to desensitized automatically, bug/UI clean up.\n"));
 
     console.log(chalk.green(`Logged in: ${client.user.username}`));
-    console.log(chalk.green(`User ID: ${client.user.id}`))
+    console.log(chalk.green(`User ID: ${client.user.id}\n`))
 
-    if (prefix == null) {
+    if (prefix == "" || prefix == null) {
         console.log(chalk.green("It seems like your new. Please config your settings!"))
 
         const setPrefix = prompt(chalk.redBright("Prefix > "));
@@ -60,7 +68,6 @@ client.on("ready", () => {
             console.log(chalk.red(`Error: ${err}`))
         })
     } else {
-
         try {
             (activityDefault) ? client.user.setActivity(activityDefault, { activity: activityTypeDefault }) : "";
             console.log("Note: if you want to change any settings go to info.json. Do not mess around with the {, or quotation marks as it will break the code.")
@@ -76,8 +83,6 @@ client.on("ready", () => {
 
 // On Message
 client.on("message", (msg) => {
-    if (!msg.content.startsWith(prefix)) return false;
-
     let string = msg.content.split(" ");
     let command = string[0].substring(1, string[0].length);
     let arg1 = string[1];
@@ -88,39 +93,85 @@ client.on("message", (msg) => {
         if (i != 0) groupedArgs = groupedArgs + ` ${v}` ;
     })
 
+    if (!msg.content.startsWith(prefix) && specialFont == true && !msg.content.startsWith("`")) { 
+          // Font check
+         if (specialFont == true) {
+              if (msg.author.id == userId) {
+                  let newMessage = ""
+            
+                  for (char = 0; char < msg.content.length; char++) {
+                       for (var x = 0; x < alphabet.length; x++) {
+                           if (alphabet[x] == msg.content[char] || alphabet[x].toUpperCase() == msg.content[char]) {
+                               newMessage += newAlphabet[x+2]
+                           }
+                        }
+                   }
+
+                 msg.edit(newMessage)
+              }
+        }
+        return false; 
+    }
+    
     if (command == "hello") {
-        msg.reply("Hello!");
+        msg.reply("`" + "Hello " + `${msg.author.username}` + ", how are you on this fine day?`");
         console.log(chalk.green("LOGGED COMMAND: Stated Greeting!"));
     }
 
+    if (command == "font" && msg.author.id == userId) {
+        if (arg1 == "on" || arg1 == "On") {
+            specialFont = true
+        } else {
+            specialFont = false;
+        }
+    }
+
     if (command == "help") {
-        msg.reply("Available Commands: `help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], vote [args] [args2], low-self-esteem`");
+        msg.reply("`help, hello, setAboutMe [args], setActivity [args], joke, setThemeColor [args], create_vote [args], vote [args] [args2], dad_finder [args], nerd [args], time, cancelTime, low-self-esteem, who`");
     }
 
     if (command == "setAboutMe" && msg.author.id == userId) {
         client.user.setAboutMe(groupedArgs)
-        if (response == "Yes" || response == "yes") msg.reply(`Set about me too: ${groupedArgs}`);
+        if (response == "Yes" || response == "yes") msg.reply("`" + "`Set about me too: `" + `${groupedArgs}` + "`");
         if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed about me!"));
+        
     }
 
     if (command == "setActivity" && msg.author.id == userId) {
         client.user.setActivity(groupedArgs)
 
-        if (response == "Yes" || response == "yes") msg.reply(`Set activity too: ${groupedArgs}`);
+        if (response == "Yes" || response == "yes") msg.reply("`" + `Set activity too: ${groupedArgs}` + "`");
         if (logCommands == "Yes" || response == "yes") return console.log(chalk.green("LOGGED COMMAND: Changed activity!"));
+        
+    } 
+    if (command == "translate" && msg.author.id == userId) {
+        axios
+        .post(`https://libretranslate.com/?source=en&target=tr&q=Hello`)
+        .then((response) => {
+            console.log(response);
+        })
     }
+
+
+    if (jokeTimes > 30) setTimeout(() => { jokeTimes = 0}, 10000);
 
     if (command == "joke") {
-        axios
-        .get("https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&format=json")
-        .then((response) => {
-            msg.reply(response.data.setup);
-            setTimeout(() => { msg.reply(response.data.delivery); msg.reply("Haha! So funny."); }, 3000);
-            console.log(chalk.green("LOGGED COMMAND: Stated Joke!"))
-        });
+        if (jokeTimes > 30) {
+            msg.reply("`" + `Can you calm the fuck down ${msg.author.username}, I aint gonna say anymore jokes! Thats final` + "`")
+        } else {
+            axios
+            .get("https://v2.jokeapi.dev/joke/Dark?blacklistFlags=religious&format=json")
+            .then((response) => {
+                msg.reply("`" +  response.data.setup + "`");
+                setTimeout(() => { msg.reply("`" + response.data.delivery + "`"); }, 3000);
+                console.log(chalk.green("LOGGED COMMAND: Stated Joke!"))
+             });
+
+             jokeTimes += 1
+        }
     }
 
-    if (command == "setThemeColor") {
+    if (command == "setThemeColor" && msg.author.id == userId) {
         if (arg1 == "random") {
             let num = Math.floor(Math.random() * 3);
 
@@ -150,10 +201,79 @@ client.on("message", (msg) => {
                if (response == "Yes" || response == "yes") msg.reply(`Not valid theme color: ${arg1}`);
             }
         }
+        
     }
 
     if (command == "low-self-esteem") {
-        msg.reply("Your the best man!");
+        msg.reply("`never ever ever ever give up " + `${msg.author.username}` + "`");
+    }
+
+    if (command == "who") {
+        msg.reply("`Asked? Bro lets be real, shut up.`")
+    }
+
+    if (command == "dad_finder") {
+        if (groupedArgs == msg.author.username) {
+            msg.reply("`" + `${groupedArgs}'s dad has esecaped, and will come back in years. Congrats!!!!!!!!!!` + "`");
+        } else {
+            let num = Math.round(Math.random() * 100);
+
+            if (num < 20) {
+                msg.reply("`" + `Tough luck, ${arg1}, your dads gonna come back in ${num} years. Sorry.` + "`");
+            }
+            if (num > 50 && num < 75) {
+                msg.reply("`" + `Oh no, ${arg1}, your dads gonna come back in ${num} years. Hang in tight, you may not see- nvm.` + "`");
+            }
+            if (num > 75) {
+                msg.reply("`" + `Sorry to inform you, ${arg1}, but you might not see your dad again. *cough* in ${num} years` + "`");
+            }
+        }
+    }
+
+    if (command == "nerd") {
+        let num = Math.round(Math.random() * 100);
+
+        if (num < 20) {
+            msg.reply("`" + `${arg1} is ${num}% smart. Your such a fucking retard, go study you -1111 IQ person. (dnt worry your uh smrt)` + "`");
+        }
+        if (num > 50 && num < 75) {
+             msg.reply("`" + `${arg1} is ${num}% smart. I mean you study, and your decently smart, but you dont miss some social events. Your kind of a nerd!` + "`");
+         }
+        if (num > 75) {
+            msg.reply("`" + `${arg1} is ${num}% smart, go get a life you nerd, I despise you with all my might. Just kidding, your calm!` + "`");
+        }
+    }
+
+    if (command == "time" && msg.author.id == userId) {
+          let x = setInterval(() => {
+            function addZero(i) {
+                if (i < 10) {i = "0" + i}
+                return i;
+              }
+              
+              const d = new Date();
+              let h = addZero(d.getUTCHours());
+              let m = addZero(d.getUTCMinutes());
+              let s = addZero(d.getUTCSeconds());
+              let time = h + ":" + m + ":" + s;
+              
+              msg.edit("`" + "The time in the UK is " + `${time}` + "`");
+
+              if (cancelTimer == true) {
+                 cancelTimer = false;
+                 msg.delete();
+                 clearInterval(x);
+              }
+          }, 1000);
+    }
+
+    if (command == "cancelTime"  && msg.author.id == userId) {
+        cancelTimer = true;
+    }
+
+    if (command == "generateHash" && msg.author.id == userId) {
+        msg.reply("`Generating hash...`");
+        msg.reply("`Your generated hash, DO NOT REVEAL THIS TO ANYONE: " + Math.sin(Math.random(1,100)) + "`")
     }
 
     if (command == "create_vote" && msg.author.id == userId) {
@@ -218,7 +338,7 @@ client.on("message", (msg) => {
 
         if (existingUser) {
             if (response == "Yes" || response == "yes") msg.reply("You have already voted for this");
-        }
+        } 
     };
 
     if (command == "view_vote") {
